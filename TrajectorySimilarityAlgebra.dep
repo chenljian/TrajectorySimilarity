@@ -1,0 +1,70 @@
+TrajectorySimilarityAlgebra.o: TrajectorySimilarityAlgebra.cpp \
+ /home/chen/secondo/include/Algebra.h \
+ /home/chen/secondo/include/NestedList.h \
+ /home/chen/secondo/Tools/ListsAndTables/CTable.h \
+ /home/chen/secondo/include/PagedArray.h \
+ /home/chen/secondo/include/SecondoSMI.h \
+ /home/chen/secondo/include/ErrorCodes.h \
+ /home/chen/secondo/include/SecondoConfig.h \
+ /home/chen/secondo/include/CacheInfo.h \
+ /home/chen/secondo/include/LogMsg.h \
+ /home/chen/secondo/Tools/ListsAndTables/PCTable.cpp \
+ /home/chen/secondo/include/WinUnix.h \
+ /home/chen/secondo/include/AlgebraTypes.h \
+ /home/chen/secondo/include/Operator.h /home/chen/secondo/include/NList.h \
+ /home/chen/secondo/include/CostEstimation.h \
+ /home/chen/secondo/include/TypeConstructor.h \
+ /home/chen/secondo/include/ConstructorTemplates.h \
+ /home/chen/secondo/include/Attribute.h \
+ /home/chen/secondo/include/SecondoSystem.h \
+ /home/chen/secondo/include/Messages.h \
+ /home/chen/secondo/include/SecondoCatalog.h \
+ /home/chen/secondo/include/AlgebraManager.h \
+ /home/chen/secondo/include/AlgebraInit.h \
+ /home/chen/secondo/include/AlgebraClassDef.h \
+ /home/chen/secondo/include/SystemInfoRel.h \
+ /home/chen/secondo/include/NameIndex.h \
+ /home/chen/secondo/include/SystemTables.h \
+ /home/chen/secondo/include/ListUtils.h \
+ /home/chen/secondo/include/QueryProcessor.h \
+ /home/chen/secondo/include/StopWatch.h \
+ /home/chen/secondo/include/DotSpec.h \
+ /home/chen/secondo/include/Counter.h \
+ /home/chen/secondo/include/CharTransform.h \
+ /home/chen/secondo/include/WinUnix.h \
+ /home/chen/secondo/include/../Tools/Flob/Flob.h \
+ /home/chen/secondo/include/../Tools/Flob/FlobId.h \
+ /home/chen/secondo/include/SecondoSMI.h \
+ /home/chen/secondo/include/../Tools/Flob/FlobManager.h \
+ /home/chen/secondo/include/Serialize.h \
+ /home/chen/secondo/include/AlmostEqual.h \
+ /home/chen/secondo/include/NestedList.h \
+ /home/chen/secondo/include/QueryProcessor.h \
+ TrajectorySimilarityAlgebra.h /home/chen/secondo/include/DateTime.h \
+ /home/chen/secondo/include/IndexableAttribute.h \
+ /home/chen/secondo/include/StandardTypes.h \
+ /home/chen/secondo/include/Trace.h \
+ /home/chen/secondo/include/TraceMacros.h \
+ /home/chen/secondo/include/Symbols.h \
+ /home/chen/secondo/include/Serialize.h \
+ /home/chen/secondo/include/StringUtils.h \
+ /home/chen/secondo/include/BigInt.h \
+ /home/chen/secondo/include/ListUtils.h ../../Tools/Flob/DbArray.h \
+ ../../Tools/Flob/Flob.h ../Spatial/SpatialAlgebra.h \
+ /home/chen/secondo/include/Attribute.h \
+ ../Spatial/../../Tools/Flob/DbArray.h \
+ ../Spatial/../Rectangle/RectangleAlgebra.h \
+ /home/chen/secondo/include/Messages.h ../Spatial/Geoid.h \
+ /home/chen/secondo/include/StandardTypes.h \
+ /home/chen/secondo/include/GenericTC.h \
+ /home/chen/secondo/include/Algebra.h \
+ /home/chen/secondo/include/AvlTree.h \
+ /home/chen/secondo/include/AlmostEqual.h ../Spatial/AVLSegment.h \
+ ../Spatial/HalfSegment.h ../Spatial/Coord.h ../Spatial/Point.h \
+ ../Spatial/Geoid.h ../Rectangle/RectangleAlgebra.h ../Spatial/AttrType.h \
+ ../Temporal/TemporalAlgebra.h ../Temporal/../../Tools/Flob/DbArray.h \
+ /home/chen/secondo/include/Progress.h ../Temporal/CellGrid.h \
+ ../Temporal/../../include/CharTransform.h ../Stream/Stream.h \
+ ../Relation-C++/RelationAlgebra.h /home/chen/secondo/include/Trace.h \
+ /home/chen/secondo/include/Counter.h \
+ ../Relation-C++/../TupleIdentifier/TupleIdentifier.h

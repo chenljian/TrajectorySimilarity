@@ -1,0 +1,26 @@
+Database : td
+Restore  : NO
+
+Operator : loaddata
+Number   : 1
+Signature: string->stream(tuple((x1 t1)..(xn tn)))
+Example  : query loaddata ( "filename" ) count
+Result   : 10
+
+Operator : loaddatafromdir
+Number   : 1
+Signature: string x string ->stream(tuple((x1 t1)...(xn tn)))
+Example  : query loadtrajectory ( "path of directory" , "extension of file" ) count
+Result   : 10
+
+Operator : convertGPS2MP
+Number   : 1
+Signature: stream(tuple((x1,t1)..(xn, tn)) x duration x Real-> stream(tuple((x1,t1)..(xn, tn)))
+Example  : query taxi feed convertGPS2MP [[const duration value (19 2)], 30.0] count
+Result   : 10
+
+Operator : gkproject
+Number   : 1
+Signature: point -> point
+Example  : query gkproject ( [const point value (1.0 1.0)]);
+Result   : (100.0 100.0)
