@@ -453,7 +453,7 @@ class GPS2MPLocalInfo
         ListExpr        tupletype;
         int oldId = 0;
         Instant dur;
-        double distance;
+        CcReal* distance;
         Tuple* tuple = NULL;
 
         void parseTuple(){
@@ -473,7 +473,7 @@ class GPS2MPLocalInfo
         }
 
         bool distanceTooLong(){
-            return oldpos.Distance(curpos) > distance;
+            return oldpos.Distance(curpos) > distance->GetValue();
         }
 
         bool mpointIsNull()
@@ -534,7 +534,7 @@ int ConvertGPS2MPVM(Word* args, Word& result, int message, Word& local, Supplier
             localinfo = new GPS2MPLocalInfo();
             localinfo->tupletype = nl->Second(GetTupleResultType(s));
             localinfo->dur.Equalize((DateTime*)args[1].addr);
-            localinfo->distance = ((CcReal*)(args[2].addr))->GetRealval();
+            localinfo->distance = static_cast<CcReal*>(args[2].addr);
             
             qp->Open(args[0].addr);
             local = SetWord(localinfo);
