@@ -46,55 +46,55 @@ using namespace tsm;
 extern NestedList* nl;
 extern QueryProcessor *qp;
 
-// int calLcss(MPoint& mp1, MPoint mp2, int delta, double epsilon)
-// {
-//   int m = mp1.Length();
-//   int n = mp2.Length();
-//   if(m == 0 || n == 0){
-//     return 0;
-//   }
-//   int* table = new int[n];
-//   table = {0};
-//   int leftUpValue = 0;
+int calLcss(MPoint mp1, MPoint mp2, datetime::DateTime delta, double epsilon)
+{
+  int m = mp1.units.Size();
+  int n = mp2.units.Size();
+  if(m == 0 || n == 0){
+    return 0;
+  }
+  int* table = new int[n];
+  table = {0};
+  int leftUpValue = 0;
 
-//   UPoint up1, up2;
-//   for(int i = 0; i < m; i++){
-//     Point p1,p2;
-//     Instant time1,time2;
-//     if(i < m-1)
-//     {
-//       mp1.units.Get(i, up1);
-//       p1 = up1.p0;
-//       time1 = up1.timeInterval.start;
-//     }
-//     else{
-//       p1 = up1.p1;
-//       time1 = up1.timeInterval.end;
-//     }
-//     for(int j = 0; j < n; j++){
-//       if(j < n-1){
-//         mp2.units.Get(j, up2);
-//         p2 = up2.p0;
-//         time2 = up2.timeInterval.start;
-//       }
-//       else{
-//         p2 = up2.p1;
-//         time2 = up2.timeInterval.end;
-//       }
-//       int temp = table[j];
-//       if(time1 - time2 < delta && p1 - p2 < epsilon){
-//         table[j] = leftUpValue +1;
-//       }
-//       else if(table[j-1] > table[j]){
-//         table[j] = table[j-1];
-//       }
-//       leftUpValue = temp;
-//     }//for j
-//   }//for i
-//   int result = table[n];
-//   delete table;
-//   return result;
-// }
+  UPoint up1, up2;
+  for(int i = 0; i < m+1; i++){
+    Point p1,p2;
+    Instant time1,time2;
+    if(i < m)
+    {
+      mp1.units.Get(i, up1);
+      p1 = up1.p0;
+      time1 = up1.timeInterval.start;
+    }
+    else{
+      p1 = up1.p1;
+      time1 = up1.timeInterval.end;
+    }
+    for(int j = 0; j < n+1; j++){
+      if(j < n){
+        mp2.units.Get(j, up2);
+        p2 = up2.p0;
+        time2 = up2.timeInterval.start;
+      }
+      else{
+        p2 = up2.p1;
+        time2 = up2.timeInterval.end;
+      }
+      int temp = table[j];
+      if(time1 - time2 < delta && p1.Distance(p2) < epsilon){
+        table[j] = leftUpValue +1;
+      }
+      else if(table[j-1] > table[j]){
+        table[j] = table[j-1];
+      }
+      leftUpValue = temp;
+    }//for j
+  }//for i
+  int result = table[n];
+  delete table;
+  return result;
+}
 /****************************************************
  *
  * calculateDistance operator
@@ -137,7 +137,155 @@ extern QueryProcessor *qp;
 //   int mp2Length = mp2Ptr->Length();
 
 //   double result = calLcss(*mp1Ptr, *mp2Ptr, *deltaPtr, *epsilonPtr)/min(mp1Length, mp2Length);
-// }
+//}
+/****************************************************
+ * 
+ * now i need an new operator
+ * 
+ * parameter: a relation, a mpoint
+ * 
+ * return mpoint id which is most similar with query trajectory use lcss
+ *  
+ * ********************************************************/
+
+
+/***************************************************
+ * 
+ * findLCSS() type map
+ * 
+ * receive 
+ * 
+ * **************************************************/
+ListExpr TestGkTM(ListExpr args)
+{
+    string msg = "stream of tuple contain mpoint X mpoint X duration X real expected"; 
+    if(nl->ListLength(args) != 4)
+    {
+        ErrorReporter::ReportError(msg);
+        return nl->TypeError();
+    }
+
+    ListExpr stream = nl->First(args);
+    ListExpr mpoint = nl->Second(args);
+    ListExpr duration = nl->Third(args);
+    ListExpr real = nl->Fourth(args);
+
+    if(! listutils::isStream(stream)){
+        ErrorReporter::ReportError(msg);
+        return listutils::typeError();
+    }
+    if(nl->IsAtom(mpoint) && nl->IsEqual(nl->AtomType(mpoint), MPoint::BasicType()) &&
+        nl->IsAtom(duration) && nl->IsEqual(nl->AtomType(duration),datetime::DateTime::BasicType()) &&
+        nl->IsAtom(real) && nl->AtomType(real) == RealType){
+        return NList(CcBool::BasicType()).listExpr();
+    }
+
+    ErrorReporter::ReportError(msg);
+    return listutils::typeError();
+}
+struct FindLCSSTrjLocalInfo{
+    MPoint* queryMpoint;
+    int qmMostSimilarId;
+    double qmMostSimilarValue;
+
+    MPoint* queryGkMpoint;
+    int qgmMostSimilarId;
+    double qgmMostSimilarValue;
+
+    FindLCSSTrjLocalInfo(){
+        queryMpoint = NULL;
+        qmMostSimilarId = 0;
+        qmMostSimilarValue = 0;
+
+        queryGkMpoint = NULL;
+        qgmMostSimilarId = 0;
+        qgmMostSimilarValue = 0;
+    }
+};
+/*************************************************
+ * 
+ * for mopint 0f every tuple
+ * calculate each each similarity value and restore it
+ * return most similar trj 
+ * *****************************************/
+int TestGkVM(Word* args, Word& result, int message, Word& local, Supplier s)
+{
+    Tuple* tuple = NULL;
+    FindLCSSTrjLocalInfo* localInfo = NULL;
+    datetime::DateTime* delta = static_cast<datetime::DateTime*>(args[2].addr);
+    CcReal* epsilon = static_cast<CcReal*>(args[3].addr);
+    CcBool* b = static_cast<CcBool*>(result.addr);
+    
+    //get mpoint
+    localInfo = new FindLCSSTrjLocalInfo();
+    localInfo->queryMpoint = static_cast<MPoint*>(args[1].addr);
+    //transfrom gk
+    localInfo->queryGkMpoint = new MPoint;
+    localInfo->queryMpoint->gk(39,*(localInfo->queryGkMpoint));
+
+    Stream<Tuple> stream(args[0]);
+    stream.open;
+
+    while((tuple = stream.request()) != 0){
+        MPoint tupleMp, tupleGkMp;
+        tupleMp.CopyFrom((MPoint*)tuple->GetAttribute(1));
+        tupleMp.gk(39,tupleGkMp);
+        int mpLcssValue = calLcss(*(localInfo->queryMpoint),tupleMp, *delta, epsilon->GetValue());
+        int gkmpLcssValue = calLcss(*(localInfo->queryGkMpoint), tupleGkMp, *delta, epsilon->GetValue()*10.0);
+        if(mpLcssValue > localInfo->qmMostSimilarValue && 
+            gkmpLcssValue > localInfo->qgmMostSimilarValue){
+            //update value
+            localInfo->qmMostSimilarValue = mpLcssValue;
+            localInfo->qmMostSimilarId = ((CcInt*)tuple->GetAttribute(0))->GetValue();
+
+            localInfo->qgmMostSimilarValue = gkmpLcssValue;
+            localInfo->qgmMostSimilarId = localInfo->qmMostSimilarId;
+
+            //comtinue
+            tuple->DeleteIfAllowed();
+            
+        }
+        else if(mpLcssValue <= localInfo->qmMostSimilarValue && 
+            gkmpLcssValue <= localInfo->qgmMostSimilarValue){
+            //comtinue
+
+            tuple->DeleteIfAllowed();
+        }
+        else{
+            //open a file and record it
+            fstream fout("/home/chen/Jared/abnormal.log", "w");
+            fout << "raw data have different similarty" << endl;
+            fout << "query traject:" << endl;
+            fout << "id :" << localInfo->qmMostSimilarId ;
+            fout << " value:" << localInfo->qmMostSimilarValue <<endl;
+            fout << "id :" << ((CcInt*)tuple->GetAttribute(0))->GetValue();
+            fout << " value:" << mpLcssValue << endl;
+            fout << "gk query trajectory:"<<endl;
+            fout << "id :" << localInfo->qgmMostSimilarId;
+            fout << " value:" << localInfo->qgmMostSimilarValue << endl;
+            fout << "id :" << ((CcInt*)tuple->GetAttribute(0))->GetValue();
+            fout << " value:" << gkmpLcssValue << endl;  
+            fout.close();
+
+            stream.close();
+            b->Set(true, false);
+            return 0;
+        }   
+    }
+    stream.close();
+    b->Set(true, true);
+    return 0;
+}
+
+struct TestGkInfo : OperatorInfo {
+    TestGkInfo()
+    {
+        name      = "testGk";
+        signature = "stream X mpoint -> bool";
+        syntax    = "_ testGk(_)";
+        meaning   = "test gk ";
+    }
+};
 
 /**
  * 
@@ -469,6 +617,8 @@ class GPS2MPLocalInfo
 
         bool intervalTooLong(){
             assert(curtime >= oldtime);
+            //cout << oldtime.ToString() << "  "<< curtime.ToString() << endl;
+           
             return curtime - oldtime > dur;
         }
 
@@ -483,13 +633,14 @@ class GPS2MPLocalInfo
 
         Tuple* packMPoint()
         {
-            mpoint->EndBulkLoad();
-
+            mpoint->EndBulkLoad(false); //no sort
+            //mpoint->Print(cout) << endl;
             Tuple *tnew = new Tuple(tupletype);
             // construct the tuple
             //cout << "mpoint " << count << "th"<< endl;
             tnew->PutAttribute(0, new CcInt(count++));   
             tnew->PutAttribute(1, mpoint); 
+            
             mpoint = NULL;  
             return tnew;
         }
@@ -505,13 +656,14 @@ class GPS2MPLocalInfo
         {
             Interval<Instant> utime(Interval<Instant>(oldtime, curtime,true,true));
             UPoint upoint(utime, oldpos, curpos);
+            //upoint.Print(cout) << endl;
             assert(oldId == curId);
             if(mpointIsNull()){
                 mpoint = new MPoint(0);
                 mpoint->StartBulkLoad();
             }
-            mpoint->MergeAdd(upoint);
-            cout << "mpoint %d " << count << ": length = " << mpoint->Length() << endl;  
+            mpoint->Add(upoint);
+            //mpoint->Print(cout)<< endl; 
         }
 };
 
