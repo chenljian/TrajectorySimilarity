@@ -82,6 +82,10 @@ int calLcss(MPoint mp1, MPoint mp2, datetime::DateTime delta, double epsilon)
         time2 = up2.timeInterval.end;
       }
       int temp = table[j];
+      if(p1.GetX() < 400){
+          p1.Set(p1.GetX()*100000, p1.GetY()*100000);
+          p2.Set(p2.GetX()*100000, p2.GetY()*100000);
+      }
       if(time1 - time2 < delta && p1.Distance(p2) < epsilon){
         table[j] = leftUpValue +1;
       }
@@ -161,7 +165,7 @@ ListExpr TestGkTM(ListExpr args)
     string msg = "stream of tuple contain mpoint X mpoint X duration X real expected"; 
     if(nl->ListLength(args) != 4)
     {
-        ErrorReporter::ReportError(msg);
+        ErrorReporter::ReportError(msg + " 4 parameter expected");
         return nl->TypeError();
     }
 
@@ -224,7 +228,7 @@ int TestGkVM(Word* args, Word& result, int message, Word& local, Supplier s)
     localInfo->queryMpoint->gk(39,*(localInfo->queryGkMpoint));
 
     Stream<Tuple> stream(args[0]);
-    stream.open;
+    stream.open();
 
     while((tuple = stream.request()) != 0){
         MPoint tupleMp, tupleGkMp;
@@ -253,7 +257,7 @@ int TestGkVM(Word* args, Word& result, int message, Word& local, Supplier s)
         }
         else{
             //open a file and record it
-            fstream fout("/home/chen/Jared/abnormal.log", "w");
+            ofstream fout("/home/chen/Jared/abnormal.log");
             fout << "raw data have different similarty" << endl;
             fout << "query traject:" << endl;
             fout << "id :" << localInfo->qmMostSimilarId ;
@@ -281,8 +285,8 @@ struct TestGkInfo : OperatorInfo {
     TestGkInfo()
     {
         name      = "testGk";
-        signature = "stream X mpoint -> bool";
-        syntax    = "_ testGk(_)";
+        signature = "stream X mpoint X duration X real -> bool";
+        syntax    = "_ testGk(_, _, _)";
         meaning   = "test gk ";
     }
 };
@@ -827,6 +831,7 @@ class TrajectorySimilarityAlgebra : public Algebra
       AddOperator(LoadDataFromDirInfo(), LoadDataFromDirValueMap, LoadDataFromDirTypeMap);
       AddOperator(ConvertGPS2MPInfo(), ConvertGPS2MPVM, ConvertGPS2MPTM);
       AddOperator(GKProjectInfo(), GKProjectVM, GKProjectTM);
+      AddOperator(TestGkInfo(), TestGkVM, TestGkTM);
     }
     ~TrajectorySimilarityAlgebra() {}
 };

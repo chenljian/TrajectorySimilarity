@@ -24,3 +24,9 @@ Number   : 1
 Signature: point -> point
 Example  : query gkproject ( [const point value (1.0 1.0)]);
 Result   : (100.0 100.0)
+
+Operator : testGk
+Number   : 1
+Signature: stream X mpoint X duration X Real -> point
+Example  : query mptaxi feed testGk[trajectory1,deltadur,20000];
+Result   : TRUE
